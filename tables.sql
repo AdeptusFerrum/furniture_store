@@ -10,7 +10,7 @@ create table if not exists courier(
     courier_surname varchar(36) not null,
     courier_name varchar(36) not null,
     courier_second_name varchar(36) null,
-    courier_telephone varchar(16) not null
+    courier_telephone varchar(20) not null
         constraint uq_courier_telephone unique
         constraint chk_courier_telephone check (courier_telephone ~'^(\+7|8)[\-]?\(?[0-9]{3}\)?[\-]?[0-9]{3}[\-]?[0-9]{2}[\-]?[0-9]{2}$')
 
@@ -42,17 +42,9 @@ create table if not exists Product_Status (
 
 create table if not exists Users(
     users_id serial not null  constraint pk_users primary key,
-    users_login varchar(36) not null
+    users_login login_type not null
         constraint uq_users_login unique
-        constraint chk_users_login check (users_login ~'^[a-zA-Z]$'),
-    users_password varchar(255) not null
-        constraint chk_users_password check(
-        users_password ~ '[!@#$%^&*()_+-.~]' AND  
-        users_password ~ '[A-Z]' AND          
-        users_password ~ '[a-z]' AND          
-        users_password ~ '[0-9]' AND          
-        length(users_password) >= 8
-        )
+    users_password password_hash not null
 );
 
 create table if not exists Storages(
@@ -85,7 +77,7 @@ create table if not exists Employee_Organization(
 
 create table if not exists Legal_Form(
     Legal_Form_ID serial not null constraint PK_Legal_Form_Id primary key,
-    Legal_Form_Name varchar(5) not null
+    Legal_Form_Name legal_form_type not null
         constraint uq_legal_form unique
 );
 
@@ -155,12 +147,10 @@ create table if not exists Manufacturer (
         constraint uq_manufacturer_name unique,
     Manufacturer_Address text not null,
     Manufacturer_Legal_Address text not null,
-    Manufacturer_TIN varchar(10) not null
+    Manufacturer_TIN inn_type not null
         constraint uq_manufacturer_tin unique,
-    Manufacturer_OKPO varchar(10) not null
-        constraint chk_manufacturer_okpo check(manufacturer_okpo ~ '^[0-9]{8}$' OR manufacturer_okpo ~ '^[0-9]{10}$'),
-    Manufacturer_BIC varchar(9) not null
-        constraint chk_manufacturer_bic check(manufacturer_bic ~'^[0-9]{9}$')
+    Manufacturer_OKPO okpo_type not null
+    Manufacturer_BIC bic_type not null
 );
 
 create table if not exists Estimate(
@@ -209,7 +199,7 @@ create table if not exists Employee(
     Employee_Surname varchar(50) not null,
     Employee_Name varchar(50) not null,
     Employee_Second_Name varchar(50) null,
-    Employee_Telephone varchar(16) not null
+    Employee_Telephone varchar(20) not null
         constraint uq_telephone_number unique
         constraint chk_employee_telephone check(employee_telephone ~'^(\+7|8)[\-]?\(?[0-9]{3}\)?[\-]?[0-9]{3}[\-]?[0-9]{2}[\-]?[0-9]{2}$')
 );
@@ -217,7 +207,7 @@ create table if not exists Employee(
 create table if not exists Employee_Auth(
     Employee_Auth_Id serial not null constraint pk_employee_auth_id primary key,
     Employee_Id int unique not null references Employee(Employee_ID),
-    Users_id int unique not null  references Users(users_id)
+    Users_id int unique not null references Users(users_id) on delete cascade on update cascade 
 );
 
 create table if not exists customers_org(
@@ -261,17 +251,15 @@ create table if not exists agent(
         constraint uq_agent_passport_seris unique,
     agent_passport_number varchar(6) not null
         constraint uq_agent_passport_number unique,
-    agent_telephone varchar(16) not null
+    agent_telephone telephone_type not null
         constraint uq_agent_telephone unique
-        constraint chk_agent_telephone check (agent_telephone ~'^(\+7|8)[\-]?\(?[0-9]{3}\)?[\-]?[0-9]{3}[\-]?[0-9]{2}[\-]?[0-9]{2}$'),
-    agent_email text null
-        constraint chk_agent_email check(agent_email ~ '@.')
+    agent_email email_type null
 );
 
 create table if not exists agent_auth (
     agent_auth_id serial not null constraint pk_agent_auth_id primary key,
-    users_id int not null references users(users_id),
-    agent_id int not null references agent(agent_id)
+    users_id int not null references users(users_id) on update cascade on delete cascade,
+    agent_id int not null references agent(agent_id) 
 );
 
 
@@ -400,3 +388,6 @@ create index if not exists i_region_automobile_number on region_automobile(regio
 create index if not exists i_automobile_id on automobile(automobile_id);
 create index if not exists i_transit_id on transit(transit_id);
 create index if not exists i_transit_number on transit(transit_number);
+
+
+
