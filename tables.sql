@@ -144,8 +144,13 @@ create table if not exists Product(
         constraint uq_product_article unique
         constraint chk_product_article check(product_article~'^ИЗД№[0-9]{7}$'),
     Product_Price decimal(12,2) not null
-        constraint chk_product_price check (product_price>=0),
-    Product_Length int not null
+        constraint chk_product_price check (product_price>=0)
+);
+
+create table if not exists product_characteristics (
+    product_characteristics_id serial not null constraint pk_product_characteristics_id,
+    product_id int not null references product(product_id) unique on delete cascade ,
+        Product_Length int not null
         constraint chk_product_length check (product_length>0),
     Product_Width int not null
         constraint chk_product_width check (product_width>0),
@@ -338,7 +343,7 @@ create index if not exists i_product_model on product(model_id);
 create index if not exists i_product_type on product(type_id);
 create index if not exists i_product_article on product(product_article);
 create index if not exists i_product_price on product(product_price);
-create index if not exists i_product_dimensions on product(product_length, product_width, product_height);
+create index if not exists i_product_dimensions on product_characteristics(product_length, product_width, product_height);
 create index if not exists i_order_status on orderr(order_status_id);
 create index if not exists i_order_customer on orderr(customers_org_id);
 create index if not exists i_order_date on orderr(order_date);
@@ -354,4 +359,4 @@ create index if not exists i_transit_courier on transit(courier_id);
 create index if not exists i_transit_dates on transit(transit_date, transit_arrive);
 create index if not exists i_manufacturer_name on manufacturer(manufacturer_name);
 create index if not exists i_manufacturer_tin on manufacturer(manufacturer_tin);
-create index iif not exists _customers_org_name on customers_org(customers_org_full_name);
+create index iif not exists i_customers_org_name on customers_org(customers_org_full_name);
