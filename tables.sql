@@ -1,3 +1,11 @@
+create table if not exists passport(
+    passport_id serial not null constraint passport_id primary key,
+    passport_series passport_series not null,
+    passport_number passport_number not null,
+    passport_sex varchar(1) not null,
+    passport_birth date not null,
+    passport_date date not null constraint chk_passport_date check((passport_date-passport_birth)>= interval '14 years')
+);
 
 create table if not exists Users(
     users_id serial not null  constraint pk_users primary key,
@@ -12,8 +20,8 @@ create table if not exists telephone_status(
 );
 
 create table if not exists email_addresses(
-    email_addresses_id serial not null constraint pk_email_addresses primary key,
-    email_addresses_name email_type not null 
+    email_id serial not null constraint pk_email_addresses primary key,
+    email_name email_type not null 
 );
 
 create table if not exists telephone(
@@ -34,25 +42,10 @@ create table if not exists courier(
     courier_id serial not null constraint pk_courier_id primary key,
     courier_surname varchar(36) not null,
     courier_name varchar(36) not null,
-    courier_second_name varchar(36) null
-);
-
-create table if not exists courier_telephone(
-    courier_telephone_id serial not null constraint pk_courier_telephone_id primary key,
-    courier_id int not null references courier(courier_id) unique,
-    telephone_id int not null references telephone(telephone_id) unique
-);
-
-create table if not exists courier_email(
-    courier_email_id serial not null constraint pk_courier_email_id primary key,
-    courier_id int not null references courier(courier_id) unique,
-    email_addresses_id int not null references email_addresses(email_addresses_id)
-);
-
-create table if not exists courier_auth(
-    courier_auth_id serial not null constraint pk_courier_auth_id primary key,
-    courier_id int not null references courier(courier_id) unique,
-    users_id int not null references users(users_id) unique
+    courier_second_name varchar(36) null,
+    users_id int not null references users(users_id) unique,
+    telephone_id int not null references telephone(telephone_id) unique,
+    email_id int not null references email_addresses(email_id) unique
 );
 
 create table if not exists Model_Automobile(
@@ -104,25 +97,11 @@ create table if not exists Employee_Organization(
     Employee_Organization_ID serial not null constraint PK_Employee_Organization_Id primary key,
     Employee_Organization_Surname varchar(50) not null,
     Employee_Organization_Name varchar(50) not null,
-    Employee_Organization_Second_Name varchar(50) null
-);
+    Employee_Organization_Second_Name varchar(50) null,
+    users_id int not null references users(users_id) unique,
+    telephone_id int not null references telephone(telephone_id) unique,
+    email_id int not null references email_addresses(email_id)
 
-create table if not exists Employee_Organization_telephone(
-    employee_organization_telephone_id serial not null constraint pk_emp_org_tel primary key,
-    employee_organization_id int not null references employee_organization(employee_organization_id) unique,
-    telephone_id int not null references telephone(telephone_id) unique
-);
-
-create table if not exists employee_organization_auth(
-    employee_organization_auth_id serial not null constraint pk_employee_organization_auth_id primary key,
-    employee_organization_id int not null references employee_organization(employee_organization_id) unique,
-    users_id int not null references users(users_id) unique
-);
-
-create table if not exists employee_organization_email(
-    empl_org_email_id serial not null constraint pk_emp_org_email_id primary key,
-    employee_organization_id int not null references employee_organization(employee_organization_id) unique,
-    email_addresses int not null references email_addresses(email_addresses_id) unique
 );
 
 create table if not exists Legal_Form(
@@ -249,25 +228,10 @@ create table if not exists Employee(
     Employee_Post_ID int not null references Employee_Post(Employee_Post_id),
     Employee_Surname varchar(50) not null,
     Employee_Name varchar(50) not null,
-    Employee_Second_Name varchar(50) null
-);
-
-create table if not exists employee_email(
-    employee_email_id serial not null constraint pk_employee_email_id primary key,
-    employee_id int not null references employee(employee_id) unique,
-    email_addresses_id int not null references email_addresses(email_addresses_id) unique
-);
-
-create table if not exists employee_telephone(
-    employee_telephone_id serial not null constraint pk_employee_telephone primary key,
-    employee_id int not null references employee(employee_id) unique,
-    telephone_id int not null references telephone(telephone_id) unique
-);
-
-create table if not exists Employee_Auth(
-    Employee_Auth_Id serial not null constraint pk_employee_auth_id primary key,
-    Employee_Id int unique not null references Employee(Employee_ID) unique,
-    Users_id int unique not null references Users(users_id) on delete cascade on update cascade unique
+    Employee_Second_Name varchar(50) null,
+    users_id int not null references users(users_id) unique,
+    telephone_id int not null references telephone(telephone_id) unique,
+    email_id int not null references email_addresses(email_id) unique
 );
 
 create table if not exists customers_org(
@@ -307,31 +271,10 @@ create table if not exists agent(
     agent_surname varchar(50) not null,
     agent_name varchar(50) not null,
     agent_second_name varchar(50) null,
-    agent_passport_series varchar(4) not null
-        constraint uq_agent_passport_seris unique,
-    agent_passport_number varchar(6) not null
-        constraint uq_agent_passport_number unique,
-    agent_email email_type null
+    passport_id int not null references passport(passport_id) unique,
+    telephone_id int not null references telephone(telephone_id) unique,
+    email_id int null references email_addresses(email_id)
 );
-
-create table if not exists agent_email(
-    agent_email_id serial not null constraint pk_agent_email_id primary key,
-    agent_id int not null references agent(agent_id),
-    email_addresses_id int not null references email_addresses(email_addresses_id) unique
-);
-
-create table if not exists agent_telephone(
-    agent_telephone_id serial not null constraint pk_agent_telephone_id primary key,
-    agent_id int not null references agent(agent_id),
-    telephone_id int not null references telephone(telephone_id)
-);
-
-create table if not exists agent_auth (
-    agent_auth_id serial not null constraint pk_agent_auth_id primary key,
-    users_id int not null references users(users_id) on update cascade on delete cascade unique,
-    agent_id int not null references agent(agent_id) 
-);
-
 
 create table if not exists Order_Check(
     Order_Check_id serial not null constraint pk_order_check_id primary key,
@@ -365,7 +308,7 @@ create table if not exists automobile(
     mark_automobile_id int not null references mark_automobile(mark_automobile_id),
     model_automobile_id int not null references model_automobile(model_automobile_id),
     color_automobile_id int not null references color_automobile(color_automobile_id),
-    region_automobile int not null references region_automobile(region_automobile_id),
+    region_automobile_id int not null references region_automobile(region_automobile_id),
     automobile_number varchar(6) not null 
         constraint uq_automobile_number unique
         constraint chk_automobile_number check(automobile_number ~'^[а-яА-Я]{1}[0-9]{3}[а-яА-Я]{2}$')
@@ -390,22 +333,26 @@ create table if not exists transit(
     transit_arrive_time time not null
 );
 
-create index if not exists i_product_search on product(model_id, type_id, product_price);
-create index if not exists i_product_availability on product_avaliable(product_id, product_status_id, storages_id);
-create index if not exists i_order_content_main on order_content(order_id, product_id, order_content_count);
-create index if not exists i_order_main on orderr(order_status_id, customers_org_id, order_date);
-create index if not exists i_transit_main on transit(transit_status_id, order_id, transit_date, transit_arrive);
-create index if not exists i_estimate_content_main on estimate_content(estimate_id, product_id, estimate_content_count);
-create index if not exists i_product_article on product(product_article) include (product_price);
-create index if not exists i_manufacturer_search on manufacturer(manufacturer_name) include (manufacturer_tin);
-create index if not exists i_customer_org_search on customers_org(customers_org_full_name, customers_org_abbreviated_name);
-create index if not exists i_order_dates on orderr(order_date, order_status_id) include (order_price);
-create index if not exists i_transit_dates on transit(transit_date, transit_arrive, transit_status_id);
-create index if not exists i_product_prices on product(product_price, type_id);
-create index if not exists i_auth_users on users(users_login) include (users_password);
-create index if not exists i_employee_auth_fast on employee_auth(users_id, employee_id);
-create index if not exists i_courier_auth_fast on courier_auth(users_id, courier_id);
-create index if not exists i_agent_auth_fast on agent_auth(users_id, agent_id);
-create index if not exists i_model_mark on model(mark_id, model_name);
-create index if not exists i_product_material on product_material(product_id, material_id);
-create index if not exists i_employee_org_contacts on employee_organization_telephone(employee_organization_id);
+create index if not exists i_users_login on users(users_login);
+create index if not exists i_users_password on users(users_password);
+create index if not exists i_product_model on product(model_id);
+create index if not exists i_product_type on product(type_id);
+create index if not exists i_product_article on product(product_article);
+create index if not exists i_product_price on product(product_price);
+create index if not exists i_product_dimensions on product(product_length, product_width, product_height);
+create index if not exists i_order_status on orderr(order_status_id);
+create index if not exists i_order_customer on orderr(customers_org_id);
+create index if not exists i_order_date on orderr(order_date);
+create index if not exists i_order_price on orderr(order_price);
+create index if not exists i_order_content_product on order_content(product_id);
+create index if not exists i_order_content_count on order_content(order_content_count);
+create index if not exists i_product_avaliable_product on product_avaliable(product_id);
+create index if not exists i_product_avaliable_status on product_avaliable(product_status_id);
+create index if not exists i_product_avaliable_storage on product_avaliable(storages_id);
+create index if not exists i_transit_status on transit(transit_status_id);
+create index if not exists i_transit_order on transit(order_id);
+create index if not exists i_transit_courier on transit(courier_id);
+create index if not exists i_transit_dates on transit(transit_date, transit_arrive);
+create index if not exists i_manufacturer_name on manufacturer(manufacturer_name);
+create index if not exists i_manufacturer_tin on manufacturer(manufacturer_tin);
+create index iif not exists _customers_org_name on customers_org(customers_org_full_name);
