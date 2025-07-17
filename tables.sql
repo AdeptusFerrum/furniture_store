@@ -324,7 +324,6 @@ create table if not exists transit(
         constraint uq_tranist_numbee unique
         constraint chk_transit_number check(transit_number ~ '^МЛ-[0-9]{2}-[0-9]{10}$'),
     transit_date date not null
-        constraint chk_transit_date check (transit_date <= transit_send),
     transit_time time not null, 
     transit_send date not null
         constraint chk_transit_send check (transit_send >= transit_date),
